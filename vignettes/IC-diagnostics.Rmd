@@ -174,7 +174,8 @@ tb_CM <- purrr::map_dfr(ls_dia, fun_CAMECA) %>%
 knitr::include_graphics(here::here("man/figures/excerpt_stat.png"))
 ```
 
-
+<!-- Change the precision of table -->
+ 
 ```{r echo=FALSE}
 knitr::kable(
   head(tb_CM),
@@ -198,6 +199,7 @@ For these examples, isotope count rates have been simulated (`simu_IC` provide a
 
 In the two simulations with a heterogeneous isotope composition the total span of isotope variability is set to 60‰. A linear trend is superimposed on the count rates of both isotope species, as this is an inherent phenomenon of SIMS analysis. This relates to changes in the ionization potential resulting from the sputter pit development and charge build-up (see vignette: [IC-process](IC-process.html)). This **systematic bias** afflicts both isotope species to a similar degree thereby leaving $R$ unaltered [see @Fitzsimons2000a].  
 
+ <!-- add a factor to make means equal -->
 
 ```{r simulations, echo=FALSE, fig.width=12, fig.height=4, fig.cap="Histograms comparing input and output $R$ values for simulations of an ideal isotopically homogenous material, a gradual gradient in $R$ (symmetric gradient), and a sudden shift in $R$ (asymmetric gradient)."}
 # Compare input value of R with output (load dataset simu_IC)
@@ -224,7 +226,8 @@ ggplot(tb_R, aes(x = R_Xt.pr)) +
   geom_vline(aes(xintercept = force.nm), color = "red") +
   geom_vline(aes(xintercept = base.nm)) +
   facet_grid(cols = vars(type.nm)) +
-  xlab("R")
+  xlab("R") +
+  theme(strip.text = element_text(size = 9))
 ```
 
 

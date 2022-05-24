@@ -14,7 +14,3 @@
 ^\.git$
 ^\.github$
 
-vignettes/workflow\.svg
-vignettes/Rlogo\.svg
-vignettes/EM-channel\.svg
-vignettes/excerpt_stat\.pdf

@@ -68,7 +68,11 @@ channel is electronically paralysed. The EM yield is the ratio between the
 number of output pulses counted after the EM  discriminator threshold and
 the number of ions arriving at the EM. The latter can be gauged with the peak
 height distribution (PHD) which is the probability for an EM output to have a
-certain voltage amplitude.
+certain voltage amplitude (see the vignette for more information:
+`vignette("IC-process", package = "point")`). Note that deadtime and yield
+corrections are only calculated when `.deadtime` and `.thr_PHD`,
+respectively, are provided. If no arguments are provided besides the IC
+data, then the function will default to calculating only ion count rates.
 }
 \examples{
 # Use point_example() to access the examples bundled with this package

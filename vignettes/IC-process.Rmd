@@ -140,7 +140,7 @@ where $\lambda$ and $p$ determine, respectively, the location and the shape of t
 
 The discriminator threshold value, the mean and variance of the measured PHD, can be used to calculate the probability that of successful ion-to-electron conversions before the analysis. This provides a means to get an accurate estimate of the true EM Yield ($Y_{EM}$). 
 
-Th function `cor_yield` calculates the yield with a given mean (`mean_PHD`), standard deviation (`SD_PHD`), and threshold value for the PHD, and makes use of the package `pPolyaAeppli` [@Burden2014].
+Th function `cor_yield` calculates the yield with a given mean (`M_PHD`), standard deviation (`SD_PHD`), and threshold value for the PHD, and makes use of the package `pPolyaAeppli` [@Burden2014].
 
 The $Y_{EM}$ can then be used to calculate the corrected counts and count rates. 
 
@@ -154,7 +154,7 @@ The $Y_{EM}$ can then be used to calculate the corrected counts and count rates.
 # original count rate of a chemical species
 x <- 30000
 # function to correct count rate based on EM Yield
-cor_yield(x, mean_PHD = 210, SD_PHD = 60, thr_PHD = 50)
+cor_yield(x, M_PHD = 210, SD_PHD = 60, thr_PHD = 50)
 ```
 
  

@@ -11,7 +11,11 @@
 #' number of output pulses counted after the EM  discriminator threshold and
 #' the number of ions arriving at the EM. The latter can be gauged with the peak
 #' height distribution (PHD) which is the probability for an EM output to have a
-#' certain voltage amplitude.
+#' certain voltage amplitude (see the vignette for more information:
+#' `vignette("IC-process", package = "point")`). Note that deadtime and yield
+#' corrections are only calculated when `.deadtime` and `.thr_PHD`,
+#' respectively, are provided. If no arguments are provided besides the IC
+#' data, then the function will default to calculating only ion count rates.
 #'
 #' @param .IC A tibble containing raw ion count data.
 #' @param ... Currently not supported.
@@ -162,7 +166,7 @@ cor_IC <-function(.IC, ..., .N = NULL, .t = NULL, .bl_t = NULL,
 #' certain voltage amplitude.
 #'
 #' @param x A numeric vector containing raw ion count data.
-#' @param mean_PHD A numeric vector containing the mean PHD value.
+#' @param M_PHD A numeric vector containing the mean PHD value.
 #' @param SD_PHD A numeric vector containing the standard deviation of the
 #' PHD.
 #' @param thr_PHD A numeric value for the disrcriminator threshold of the EM
@@ -179,11 +183,11 @@ cor_IC <-function(.IC, ..., .N = NULL, .t = NULL, .bl_t = NULL,
 #' x <- 30000
 #'
 #' # Corrected count rate for EM Yield with a threshold of 50 V
-#' cor_yield(x, mean_PHD = 210, SD_PHD = 60, thr_PHD = 50)
+#' cor_yield(x, M_PHD = 210, SD_PHD = 60, thr_PHD = 50)
 #'
 #' # Corrected count rate for a deadtime of 44 ns
 #' cor_DT(x, 44)
-cor_yield <- function(x = NULL, mean_PHD, SD_PHD, thr_PHD, output = "ct"){
+cor_yield <- function(x = NULL, M_PHD, SD_PHD, thr_PHD, output = "ct"){
 
   # Stop execution if threshold = 0 an return Xt
   if (thr_PHD == 0) {
@@ -194,10 +198,10 @@ cor_yield <- function(x = NULL, mean_PHD, SD_PHD, thr_PHD, output = "ct"){
     }
 
   # Lambda parameter
-  lambda <- (2 * mean_PHD ^ 2) / (SD_PHD ^ 2 + mean_PHD)
+  lambda <- (2 * M_PHD ^ 2) / (SD_PHD ^ 2 + M_PHD)
 
   # Probability parameter
-  prob <- (SD_PHD ^ 2 - mean_PHD) / (SD_PHD ^ 2 + mean_PHD)
+  prob <- (SD_PHD ^ 2 - M_PHD) / (SD_PHD ^ 2 + M_PHD)
 
   if (prob < 0 | prob >= 1) {
     stop("Unable to calculate probability.", call. = FALSE)

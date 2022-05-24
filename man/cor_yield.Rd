@@ -5,14 +5,14 @@
 \alias{cor_DT}
 \title{Correct ion detection bias}
 \usage{
-cor_yield(x = NULL, mean_PHD, SD_PHD, thr_PHD, output = "ct")
+cor_yield(x = NULL, M_PHD, SD_PHD, thr_PHD, output = "ct")
 
 cor_DT(x, deadtime)
 }
 \arguments{
 \item{x}{A numeric vector containing raw ion count data.}
 
-\item{mean_PHD}{A numeric vector containing the mean PHD value.}
+\item{M_PHD}{A numeric vector containing the mean PHD value.}
 
 \item{SD_PHD}{A numeric vector containing the standard deviation of the
 PHD.}
@@ -50,7 +50,7 @@ certain voltage amplitude.
 x <- 30000
 
 # Corrected count rate for EM Yield with a threshold of 50 V
-cor_yield(x, mean_PHD = 210, SD_PHD = 60, thr_PHD = 50)
+cor_yield(x, M_PHD = 210, SD_PHD = 60, thr_PHD = 50)
 
 # Corrected count rate for a deadtime of 44 ns
 cor_DT(x, 44)
