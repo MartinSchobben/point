@@ -2,7 +2,7 @@
 % Please edit documentation in R/calibrate_IC.R
 \name{calib_R}
 \alias{calib_R}
-\title{Calibration of isotope ratios}
+\title{Calibration of Isotope Ratios}
 \usage{
 calib_R(
   x,
@@ -36,17 +36,15 @@ the argument input.}
 A numeric value or vector.
 }
 \description{
-\code{calib_R} function to convert isotope values back-and-forth between R
-and delta
+\code{calib_R} function to convert isotope values back-and-forth between R,
+delta, and more.
 }
 \details{
-A fundamental in publishing isotope data is the conversion of isotope the
-delta formulation comparing the obtained R to that of a standard. These
-values are reported on a per mill scale. However in IC calculations ratios
-(R) or fractional abundances (F) are most commonly used. This functions
-provide an easy way of making these transformations for both the average
-composition but also fractionations as enrichment factors
-(alpha and epsilon).
+It is convention to publish isotope data as delta transformed values, where
+the R is compared relative to a known standard. These values are reported on
+a per mill scale. However IC calculations more commonly use ratios (R) or
+fractional abundances (F). This function provides an easy way to calculate
+fractionations and enrichment factors (alpha and epsilon).
 }
 \examples{
 # R value of 0.0111 to delta on VPDB scale

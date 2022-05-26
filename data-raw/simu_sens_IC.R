@@ -21,11 +21,13 @@ simu_IC <- purrr::map2_dfr(
     .reference = "VPDB",
     .seed = .y,
     .reps = reps,
-    .devR = -60
+    .baseR = 0,
+    .devR = -60,
+    .equal_means = T
     )
-  ) %>%
+  ) |>
 # rename to make examples clearer
-  rename(Xt.pr = Xt.sm, N.pr = N.sm)
+  dplyr::rename(Xt.pr = Xt.sm, N.pr = N.sm)
 
 # Save small data-set for package
 usethis::use_data(simu_IC, overwrite = TRUE, compress = "xz")

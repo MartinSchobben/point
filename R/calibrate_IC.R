@@ -1,15 +1,13 @@
-#' Calibration of isotope ratios
+#' Calibration of Isotope Ratios
 #'
-#' \code{calib_R} function to convert isotope values back-and-forth between R
-#' and delta
+#' \code{calib_R} function to convert isotope values back-and-forth between R,
+#' delta, and more.
 #'
-#' A fundamental in publishing isotope data is the conversion of isotope the
-#' delta formulation comparing the obtained R to that of a standard. These
-#' values are reported on a per mill scale. However in IC calculations ratios
-#' (R) or fractional abundances (F) are most commonly used. This functions
-#' provide an easy way of making these transformations for both the average
-#' composition but also fractionations as enrichment factors
-#' (alpha and epsilon).
+#' It is convention to publish isotope data as delta transformed values, where
+#' the R is compared relative to a known standard. These values are reported on
+#' a per mill scale. However IC calculations more commonly use ratios (R) or
+#' fractional abundances (F). This function provides an easy way to calculate
+#' fractionations and enrichment factors (alpha and epsilon).
 #'
 #' @param x  A numeric value or vector.
 #' @param reference A character or numeric value or vector.
@@ -45,17 +43,30 @@
 calib_R <- function(x, reference, isotope, type = "composition",
                     input = "R", output = "F", y = NULL){
 
-  if (input == output) stop("Input and output are equal.", call. = FALSE)
+  if (input == output) {
+    stop("Input and output are equal.", call. = FALSE)
+  }
+
   if (type == "enrichment") {
-    if (!c(output == "epsilon" | output == "alpha")) {
-      stop(paste0("For enrichment conversion at least output has to be an",
-                  "enrichment factor."), call. = FALSE)
-    } else if(!is.null(y) & c(input == "epsilon" | input == "alpha")) {
-           stop(paste0("Input epsilon or alpha is only meaningfull when",
-                       "converting between enrichment factors."), call. = FALSE)
-    } else if (is.null(y) & !c(input == "epsilon" | input == "alpha")) {
-           stop(paste0("For enrichment conversion of one value input has to be",
-                       "alpha or epsilon."), call. = FALSE)
+
+    if (!output %in% c("alpha", "epsilon")) {
+
+      stop("For enrichment `output` should be either \"alpha\" or \"epsilon\".",
+           call. = FALSE)
+
+    } else {
+
+      if (is.null(y)) {
+
+        stop("A secondary \"delta\" or \"R\" value should be supplied to `y`.",
+             call. = FALSE)
+
+      } else if (all(input %in% c("alpha", "epsilon"), !is.null(y))) {
+
+        stop("For enrichment conversion (e.g., \"alpha\" to \"epsilon\") `y` ",
+             "is not used.", call. = FALSE)
+
+      }
     }
   }
 

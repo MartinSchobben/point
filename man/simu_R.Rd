@@ -17,7 +17,7 @@ simu_R(
   .reps = 1,
   .baseR = 0,
   .devR = 0,
-  ...
+  .equal_means = FALSE
 )
 }
 \arguments{
@@ -52,7 +52,9 @@ mille.}
 \item{.devR}{Numeric for the deviation (or forcing) away from the baseline as
 delta notation in per mille.}
 
-\item{...}{Not supported currently}
+\item{.equal_means}{Should the mean of the output be equal to `.baseR`. This
+defaults to `FALSE`, if set to `TRUE` this can be an computationally
+expensive procedure.}
 }
 \value{
 Tibble with simulated ion count data.D

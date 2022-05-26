@@ -218,16 +218,36 @@ tb_R <- mutate(
       base.nm,
       calib_R(force.nm, "VPDB", "13C", input = "delta", output = "R")
     )
+) |> 
+  group_by(type.nm, trend.nm, base.nm, force.nm) |> 
+  mutate(threshold = 2 * sd(R_Xt.pr)) |> 
+  filter(spot.nm == 1)
+
+# breaks for x axis
+brks <- with(
+  filter(tb_R, type.nm == "ideal"), 
+  round(
+    c(min(M_R_Xt.pr - threshold), mean(M_R_Xt.pr), max(M_R_Xt.pr + threshold)), 
+    5
+  )
 )
 
 # Plot
 ggplot(tb_R, aes(x = R_Xt.pr)) +
   geom_histogram(alpha = 0.4, binwidth = 1e-4) +
-  geom_vline(aes(xintercept = force.nm), color = "red") +
-  geom_vline(aes(xintercept = base.nm)) +
+  geom_segment(aes(x = force.nm, xend = force.nm, y = 0, yend = 215), linetype = 2, color = "red") +
+  geom_segment(aes(x = base.nm, xend = base.nm, y = 0, yend = 215), linetype = 2) +
+  geom_hline(aes(yintercept = 0), color = grey.colors(n = 1)) +
+  geom_point(aes(x = M_R_Xt.pr, y = -15)) +
+  geom_errorbarh(
+    aes(xmin = M_R_Xt.pr - threshold, xmax = M_R_Xt.pr + threshold, y = -15), 
+    height = 10
+  ) +
+  scale_x_continuous("R", breaks = brks) +
+  scale_y_continuous("count", expand = c(0, 10)) +
   facet_grid(cols = vars(type.nm)) +
-  xlab("R") +
-  theme(strip.text = element_text(size = 9))
+  theme(strip.text = element_text(size = 12)) +
+  theme(axis.line.x = element_blank())
 ```
 
 
