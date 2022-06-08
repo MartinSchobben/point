@@ -98,7 +98,7 @@ nest_R_lm <- function(IC, gr_by, X1, X2, t, method, hyp, alpha_level,
       aug =
         # parallel computation makes this step faster
         parallel::mcMap(
-          function(x) broom::augment(formula_parser(x, X1, X2, type = "Rm")),
+          function(x) broom.mixed::augment(formula_parser(x, X1, X2, type = "GLS")),
           .data$data,
           mc.cores = mc_cores
         ),

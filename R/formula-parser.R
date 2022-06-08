@@ -27,6 +27,9 @@ formula_parser <- function(data, arg1, arg2, flag = NULL, transformation = NULL,
   # weight terms
   weights <- generate_weight(!!arg2, type, transformation)
 
+  # correlation structure
+  corr <- generate_cor(!!arg2)
+
   # random terms
   if (!is.null(nest)) {
     rand <- generate_random(!!arg2, type, !!nest, transformation)
@@ -39,13 +42,21 @@ formula_parser <- function(data, arg1, arg2, flag = NULL, transformation = NULL,
     QSA = rlang::call2("lme", fixed, random = rand, data = rlang::expr(data),
                        .ns = "nlme"),
     GLS = rlang::call2("gls", fixed, data = rlang::expr(data),
-                       weights = weights, .ns = "nlme"),
+                       weights = weights, correlation = corr, method = "REML",
+                       .ns = "nlme"),
     Rm =  rlang::call2("lm", fixed, data = rlang::expr(data), weights = weights),
     LME = rlang::call2("lme", fixed, random = rand, data = rlang::expr(data),
                        weights = weights, .ns = "nlme")
   )
 
   if(isTRUE(execute)) rlang::eval_tidy(fml, data) else fml
+}
+# correlation structure
+generate_cor <- function(arg2) {
+  arg2 <- rlang::ensym(arg2)
+  # formula
+  fm <- rlang::new_formula(NULL, arg2)
+  rlang::call2("varFixed", fm, .ns = "nlme")
 }
 
 # The random terms

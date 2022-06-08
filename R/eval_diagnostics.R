@@ -54,6 +54,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
                       .tf = "ppt", .label = "none", .meta = FALSE,
                       .mc_cores = 1){
 
+
   # Quoting the call (user-supplied expressions)
   # Additional arguments
   args <- enquos(.X = .X, .N = .N, .species = .species, .t = .t)
@@ -216,13 +217,13 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
 lm_fun <- function(.IC, args) {
 
   # full R model
-  lm_1 <- formula_parser(.IC, args[["Xe"]], args[["X2"]], flag = args[[".flag"]],
-                         type = "Rm")
+  lm_1 <- formula_parser(.IC, args[["X1"]], args[["X2"]], flag = args[[".flag"]],
+                         type = "GLS")
   # zero R model
-  lm_0 <- formula_parser(.IC, args[["Xe"]], args[["X2"]], type = "Rm")
+  lm_0 <- formula_parser(.IC, args[["X1"]], args[["X2"]], type = "GLS")
 
   # Join model hypothesis test
-  IC_aov <- broom::tidy(anova(lm_0 , lm_1))
+  IC_aov <- broom.mixed::tidy(anova(lm_0 , lm_1))
 
   tibble::lst(
     !! args[["ratio"]] := unique(dplyr::pull(.IC, !! args[["ratio"]])),
