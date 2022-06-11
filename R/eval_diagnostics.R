@@ -143,7 +143,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
   }
 
   # Re-center residuals along flag variable
-  IC_lm  <- cstd_var(IC_lm, gr_by, args)
+  # IC_lm  <- cstd_var(IC_lm, gr_by, args)
 
   # Create zero (constrained) model flag and updated model
   IC_lm <- tidyr::nest(IC_lm, data = -c(!!! gr_by)) |>
@@ -216,10 +216,10 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
 lm_fun <- function(.IC, args) {
 
   # full R model
-  lm_1 <- formula_parser(.IC, args[["Xe"]], args[["X2"]], flag = args[[".flag"]],
+  lm_1 <- formula_parser(.IC, args[["X1"]], args[["X2"]], flag = args[[".flag"]],
                          type = "Rm")
   # zero R model
-  lm_0 <- formula_parser(.IC, args[["Xe"]], args[["X2"]], type = "Rm")
+  lm_0 <- formula_parser(.IC, args[["X1"]], args[["X2"]], type = "Rm")
 
   # Join model hypothesis test
   IC_aov <- broom::tidy(anova(lm_0 , lm_1))

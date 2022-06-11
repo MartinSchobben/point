@@ -35,3 +35,15 @@ test_that("residual diagnostics on internal dataset is consistent", {
        .species = species.nm, .t = t.nm, .output = "flag")
   )
 })
+
+test_that("lm weight are calculated", {
+
+  # Descriptive an predictive statistics for 13C/12C ratios (note .output
+  # argument and remove zero count analysis)
+  tb_R <- stat_R(real_IC, "13C", "12C", file.nm, .output = "complete",
+                 .zero = TRUE)
+
+  calc_lm_weight(tb_R, quo(Xt.pr.13C), quo(Xt.pr.13C), quos(file.nm))
+
+
+})

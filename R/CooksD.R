@@ -56,6 +56,9 @@ CooksD <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .species = NULL
   # Common isotope
   X2 <- quo_updt(args[[".X"]], post = .ion2) # count rate
 
+  # Calculate weights for lm
+  .IC <- calc_lm_weight(.IC, X1, gr_by)
+
   # Execute
   IC_nest <- nest_R_lm(.IC, gr_by, X1, X2, args[[".t"]], method = fun_nm,
                        hyp = .hyp, alpha_level = .alpha_level,
@@ -343,6 +346,17 @@ custom_bp <- function(IC, X2){
 # standard error of quantiles model
 hat_QR_se <- function(RQ, TQ, pb, n){
   (sd(RQ) / dnorm(TQ)) * sqrt((pb * (1 - pb))/ unique(n))
+}
+
+# weight for lm
+calc_lm_weight <- function(IC, X1, gr) {
+  dplyr::group_by(IC, !!!gr) |>
+    dplyr::mutate(
+      # hat_S_Ri_N.pr = purrr::map2_dbl(!!X1, !!X2, ~stat_SDprop(.x, .y, type ="sd", predicted =  TRUE)),
+      weight = sqrt(Xt.pr.13C + Xt.pr.12C) / (sum(sqrt(Xt.pr.13C + Xt.pr.12C )  / dplyr::n()))
+    ) |>
+    dplyr::ungroup()
+
 }
 
 #' @rdname Cameca

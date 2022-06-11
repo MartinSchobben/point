@@ -144,7 +144,7 @@ generate_weight <- function(arg2, type, transformation = NULL) {
   # construct weight
   switch(
     type,
-    Rm =  rlang::expr(1 / !! arg2),
+    Rm =  rlang::expr(I(1 / (!! arg2 * weight))),
     LME = rlang::new_formula(NULL, rlang::expr(1 / !! arg2))
   )
 }
