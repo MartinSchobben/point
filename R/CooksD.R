@@ -166,7 +166,7 @@ transmute_reg <- function(IC, X1, X2, type){
 
   if (type == "Rm"| type == "CV") args <- args[c(as_name(hat_X1), "studE")]
   if (type == "norm_E") args <- args[c("studE", "hat_Xi", "CooksD")]
-  if (type == "CooksD") args <- args[c(as_name(hat_X1), "CooksD")]
+  if (type == "CooksD") args <- args[c(as_name(hat_X1), "CooksD", "hat_E")]
   if (type == "QQ"| type == "IR") args <- args["studE"]
 
   # Execute
@@ -196,7 +196,7 @@ flag_set <- function(IC, type, alpha_level){
      flag =
        factor(
          dplyr::if_else(
-           CooksD < {4 / (dplyr::n() - 2)},
+           CooksD < {3.8 / (dplyr::n() - 2)},
            "confluent",
            "divergent"
           )
@@ -352,8 +352,9 @@ hat_QR_se <- function(RQ, TQ, pb, n){
 calc_lm_weight <- function(IC, X1, gr) {
   dplyr::group_by(IC, !!!gr) |>
     dplyr::mutate(
+      hat_S2_Ri_N.pr = sqrt(Xt.pr.13C + Xt.pr.12C),
       # hat_S_Ri_N.pr = purrr::map2_dbl(!!X1, !!X2, ~stat_SDprop(.x, .y, type ="sd", predicted =  TRUE)),
-      weight = sqrt(Xt.pr.13C + Xt.pr.12C) / (sum(sqrt(Xt.pr.13C + Xt.pr.12C )  / dplyr::n()))
+      weight = hat_S2_Ri_N.pr / (sum(hat_S2_Ri_N.pr  / dplyr::n()))
     ) |>
     dplyr::ungroup()
 

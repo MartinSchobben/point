@@ -107,7 +107,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
   IC_n <- dplyr::count(.IC, !!! gr_by, !! args[[".flag"]], !! args[["ratio"]],
                        !! args[["M_R"]])
 
-  n_o <- nrow(dplyr::filter(IC_n , !! args[[".flag"]] == "divergent" &
+  n_o <- nrow(dplyr::filter(IC_n , !! args[[".flag"]] != "confluent" &
                               .data$n >= 10))
 
   # store remainder and starting data for intra-analyses test
@@ -121,7 +121,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
 
   }
 
-  if (n_o < nrow(dplyr::filter(IC_n, !! args[[".flag"]] == "divergent"))) {
+  if (n_o < nrow(dplyr::filter(IC_n, !! args[[".flag"]] != "confluent"))) {
 
     warning(paste0("Number of flagged outliers in some samples is too small",
             " for a reliable diagnostic. Execution proceeded with remaining",
@@ -143,7 +143,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
   }
 
   # Re-center residuals along flag variable
-  # IC_lm  <- cstd_var(IC_lm, gr_by, args)
+  IC_lm  <- cstd_var(IC_lm, gr_by, args)
 
   # Create zero (constrained) model flag and updated model
   IC_lm <- tidyr::nest(IC_lm, data = -c(!!! gr_by)) |>
@@ -345,30 +345,24 @@ coef_pull <- function(sum, data, arg, trans){
 
 }
 
-# re-center outliers towards the fitted value by subtraction of residual
-# extremes
+# re-center outliers towards the fitted value by subtraction of the predicted
+# ranges (cq weights)
 cstd_var <- function(.IC, gr_by, args){
-  dplyr::group_by(.IC, !!! gr_by) %>%
+  dplyr::group_by(.IC, !!! gr_by) |>
     dplyr::mutate(
-      # Residuals
-      E = !! args[["X1"]] - !! args[["hat_X1"]],
-      # Divide values in upper and lower sectors
-      sector =
-        dplyr::if_else(
-          !! args[["X1"]] >=  !! args[["hat_X1"]],
-          "upper",
-          "lower"
-        )
-    ) %>%
-    dplyr::group_by(!!! gr_by, !! args[[".flag"]], .data$sector) %>%
-    dplyr::mutate(
-      min_bound =
-        dplyr::if_else(.data$sector == "upper", min(.data$E), max(.data$E)),
-      !! args[["Xe"]] := .data$E - .data$min_bound + !! args[["hat_X1"]],
-      .keep = "unused"
+      delta.X2 = 2 * sqrt(!! args[["X2"]]),
+      delta.X1 = 2 * sqrt(!! args[["hat_X1"]]),
+      upper.X2 = !! args[["X2"]] +  delta.X2,
+      upper.X1 = !! args[["hat_X1"]] + delta.X1,
+      lower.X2 = !! args[["X2"]] - delta.X2,
+      lower.X1 = !! args[["hat_X1"]] - delta.X1,
+      !!args[["X2"]] := dplyr::if_else(!! args[["X2"]] > upper.X2, !!args[["X2"]] - delta.X2, !!args[["X2"]]),
+      !!args[["X1"]] := dplyr::if_else(!! args[["X1"]] > upper.X1, !!args[["X1"]] - delta.X1, !!args[["X1"]]),
+      !!args[["X2"]] := dplyr::if_else(!! args[["X2"]] < lower.X2, !!args[["X2"]] + delta.X2, !!args[["X2"]]),
+      !!args[["X1"]] := dplyr::if_else(!! args[["X1"]] < lower.X1, !!args[["X1"]] + delta.X1, !!args[["X1"]])
     ) |>
-    dplyr::ungroup() |>
-    dplyr::select(-c(.data$min_bound, .data$sector))
+    dplyr::ungroup()
+
 }
 
 # Conditional coefficient back transformation
