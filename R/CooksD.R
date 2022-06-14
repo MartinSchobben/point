@@ -98,7 +98,7 @@ nest_R_lm <- function(IC, gr_by, X1, X2, t, method, hyp, alpha_level,
       aug =
         # parallel computation makes this step faster
         parallel::mcMap(
-          function(x) broom.mixed::augment(formula_parser(x, X1, X2, type = "GLS")),
+          function(x) augment(formula_parser(x, X1, X2, type = "GLS")),
           .data$data,
           mc.cores = mc_cores
         ),
@@ -168,6 +168,21 @@ transmute_reg <- function(IC, X1, X2, type){
 
   # Execute
   dplyr::transmute(IC, !!! args)
+}
+
+# custom augment
+# md: nlme model object
+augment <- function(md, .mc_cores = 1) {
+
+  infl <- stats::influence(md)
+
+  tibble::tibble(
+    .fitted = as.vector(fitted(md)),
+    .resid = as.vector(resid(md)),
+    .std.resid = NA,
+    .hat = NA,
+    .cooksd = cooks.distance(infl)
+  )
 }
 
 # create flag variable
