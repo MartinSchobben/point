@@ -237,15 +237,15 @@ cov_R <- function(.IC, .ion, ..., .species = NULL, .t = NULL,
   gr_by <- enquos(...)
 
   # Observation per group
-  obs_gr <- dplyr::group_size(dplyr::group_by(.IC, !!! gr_by, !! args[[".species"]]))
-  # Distinct observation for time increments
-  obs_t <- dplyr::n_distinct(dplyr::pull(.IC, !! args[[".t"]]))
-  # Check if t steps is consistent with grouping otherwise create new ID
-  if (any(obs_gr %% obs_t != 0)) {
-    .IC <- dplyr::group_by(.IC, !!! gr_by, !! args[[".species"]]) %>%
-      dplyr::mutate(!! args[[".t"]] := dplyr::row_number()) %>%
-      dplyr::ungroup()
-  }
+  # obs_gr <- dplyr::group_size(dplyr::group_by(.IC, !!! gr_by, !! args[[".species"]]))
+  # # Distinct observation for time increments
+  # obs_t <- dplyr::n_distinct(dplyr::pull(.IC, !! args[[".t"]]))
+  # # Check if t steps is consistent with grouping otherwise create new ID
+  # if (any(obs_gr %% obs_t != 0)) {
+  #   .IC <- dplyr::group_by(.IC, !!! gr_by, !! args[[".species"]]) %>%
+  #     dplyr::mutate(!! args[[".t"]] := dplyr::row_number()) %>%
+  #     dplyr::ungroup()
+  # }
   # Remove white space in ion names and add underscore for polyatomic species
   IC <- dplyr::mutate(
     .IC,

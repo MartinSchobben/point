@@ -41,8 +41,9 @@ test_that("diagnostics wrapper on synthetic data is consistent", {
                       .t = t.nm) |>
     tidyr::unnest(cols = M_R_Xt.pr)
   # extract distinct groups omitting block-wise means
-  dplyr::distinct(tb_sig, .data$type.nm, .data$trend.nm, .data$force.nm,
-                  .data$spot.nm, .keep_all = TRUE)
+  expect_snapshot(
+    dplyr::distinct(tb_sig, type.nm, trend.nm, force.nm, spot.nm, .keep_all = TRUE)
+  )
 })
 
 test_that("QQ diagnostic on synthetic data is consistent", {

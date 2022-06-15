@@ -221,16 +221,24 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
 lm_fun <- function(.IC, args) {
 
   # full R model
-  lm_1 <- formula_parser(.IC, args[[".hat_E"]], args[[".t"]],
-                         flag = args[[".flag"]], type = "OLS")
-  # Join model hypothesis test
-  IC_aov <- broom::glance(lm_1)
+  lm_1 <- formula_parser(.IC, args[["X1"]], args[["X2"]], flag = args[[".flag"]],
+                         type = "Rm")
+  # zero R model
+  lm_0 <- formula_parser(.IC, args[["X1"]], args[["X2"]], type = "Rm")
+
+  # lm_1 <- formula_parser(.IC, args[[".hat_E"]], args[[".t"]],
+  #                        flag = args[[".flag"]], type = "OLS")
+  # # Join model hypothesis test
+  # IC_aov <- broom::glance(lm_1)
+  IC_aov <- broom::tidy(anova(lm_0 , lm_1))
 
   tibble::lst(
     !! args[["ratio"]] := unique(dplyr::pull(.IC, !! args[["ratio"]])),
     !! args[["M_R"]] := unique(dplyr::pull(.IC, !! args[["M_R"]])),
-    !! args[["F_R"]] := dplyr::pull(IC_aov, .data$statistic),
-    !! args[["p_R"]] := dplyr::pull(IC_aov, .data$p.value)
+    # !! args[["F_R"]] := dplyr::pull(IC_aov, .data$statistic),
+    # !! args[["p_R"]] := dplyr::pull(IC_aov, .data$p.value),
+    !! args[["F_R"]] := dplyr::pull(IC_aov, .data$statistic)[2],
+    !! args[["p_R"]] := dplyr::pull(IC_aov, .data$p.value)[2]
   )
 }
 
@@ -352,6 +360,16 @@ coef_pull <- function(sum, data, arg, trans){
 cstd_var <- function(.IC, gr_by, args){
   dplyr::group_by(.IC, !!! gr_by) |>
     dplyr::mutate(
+      delta.X2 = 2 * sqrt(!! args[["X2"]]),
+      delta.X1 = 2 * sqrt(!! args[["hat_X1"]]),
+      upper.X2 = !! args[["X2"]] +  delta.X2,
+      upper.X1 = !! args[["hat_X1"]] + delta.X1,
+      lower.X2 = !! args[["X2"]] - delta.X2,
+      lower.X1 = !! args[["hat_X1"]] - delta.X1,
+      !!args[["X2"]] := dplyr::if_else(!! args[["X2"]] > upper.X2, !!args[["X2"]] - delta.X2, !!args[["X2"]]),
+      !!args[["X1"]] := dplyr::if_else(!! args[["X1"]] > upper.X1, !!args[["X1"]] - delta.X1, !!args[["X1"]]),
+      !!args[["X2"]] := dplyr::if_else(!! args[["X2"]] < lower.X2, !!args[["X2"]] + delta.X2, !!args[["X2"]]),
+      !!args[["X1"]] := dplyr::if_else(!! args[["X1"]] < lower.X1, !!args[["X1"]] + delta.X1, !!args[["X1"]]),
       # error caused by heteroscedaisty
       hat_R_S2 = sqrt(!!args[["X1"]] + !!args[["X2"]]),
       weight = hat_R_S2 / (sum(hat_R_S2  / dplyr::n())),
@@ -360,8 +378,10 @@ cstd_var <- function(.IC, gr_by, args){
 
       # correct for explained variance
       delta.hat_E = 2 * sqrt(!!args[["hat_X1"]]) * (1 / weight),
-      !!args[[".hat_E"]] := dplyr::if_else( !!args[[".hat_E"]] > delta.hat_E, !!args[[".hat_E"]] - delta.hat_E, !!args[[".hat_E"]]),
-      !!args[[".hat_E"]] := dplyr::if_else( !!args[[".hat_E"]] < -delta.hat_E, !!args[[".hat_E"]] + delta.hat_E, !!args[[".hat_E"]])
+      !!args[[".hat_E"]] :=
+        dplyr::if_else( !!args[[".hat_E"]] > delta.hat_E, !!args[[".hat_E"]] - delta.hat_E, !!args[[".hat_E"]]),
+      !!args[[".hat_E"]] :=
+        dplyr::if_else( !!args[[".hat_E"]] < -delta.hat_E, !!args[[".hat_E"]] + delta.hat_E, !!args[[".hat_E"]])
 
     ) |>
     dplyr::ungroup()
