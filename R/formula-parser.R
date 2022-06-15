@@ -25,7 +25,7 @@ formula_parser <- function(data, arg1, arg2, flag = NULL, transformation = NULL,
   }
 
   # weight terms
-  weights <- generate_weight(!!arg2, type, transformation)
+  weights <- generate_weight(!!arg1, !!arg2, type, transformation)
 
   # random terms
   if (!is.null(nest)) {
@@ -103,11 +103,11 @@ generate_fixed <- function(arg1, arg2, type, flag = NULL,
   arg2 <- predictor_transformer(!! arg2, transformation)
 
   # rhs of the formula
-  if (type == "Rm") {
+  # if (type == "Rm") {
     rhs <- paste0("-1 +", rlang::as_label(arg2))
-  } else if (type == "OLS") {
-    rhs <- rlang::as_label(arg2)
-  }
+  # } else if (type == "OLS") {
+  #   rhs <- rlang::as_label(arg2)
+  # }
 
   # add flag variable if needed
   if (!is.null(flag)) {
@@ -126,9 +126,10 @@ generate_fixed <- function(arg1, arg2, type, flag = NULL,
 # type: sort of model (ratio method (RM), linear mixed effect (LME),
 #  generalized least square (GLS), and ordinary least square (OLS))
 # transformation: predictor transform (parts per thousand (ppt) or log)
-generate_weight <- function(arg2, type, transformation = NULL) {
+generate_weight <- function(arg1, arg2, type, transformation = NULL) {
 
   # symbols
+  arg1 <- rlang::ensym(arg1)
   arg2 <- rlang::ensym(arg2)
 
   # weighing structure for LME and GLS is equal but differs from `lm`
@@ -141,10 +142,14 @@ generate_weight <- function(arg2, type, transformation = NULL) {
   # transform
   arg2 <- predictor_transformer(!! arg2, transformation)
 
+  # weights
+  hat_R_S2 <- rlang::expr(sqrt(!!arg1 + !!arg2))
+  weight <- rlang::expr(!!hat_R_S2 / (sum(!!hat_R_S2  / dplyr::n())))
+
   # construct weight
   switch(
     type,
-    Rm =  rlang::expr(I(1 / (!! arg2 * weight))),
+    Rm =  rlang::expr(I(1 / (!! arg2 * !! weight))),
     LME = rlang::new_formula(NULL, rlang::expr(1 / !! arg2))
   )
 }

@@ -32,6 +32,17 @@ test_that("diagnostics wrapper on synthetic data is consistent", {
     diag_R(simu_IC, "13C", "12C", type.nm, spot.nm, .nest = type.nm,
            .label = "latex")
   )
+  # Cameca style
+  tb_dia <- diag_R(simu_IC, "13C", "12C", type.nm, trend.nm, force.nm, spot.nm,
+                   bl.nm, .method = "Cameca", .output = "diagnostic")
+  # evaluation of performance (intra-analysis isotope test)
+  tb_sig <- eval_diag(tb_dia, "13C", "12C", type.nm, trend.nm, force.nm,
+                      spot.nm, .X = Xt.pr, .N = N.pr, .species = species.nm,
+                      .t = t.nm) |>
+    tidyr::unnest(cols = M_R_Xt.pr)
+  # extract distinct groups omitting block-wise means
+  dplyr::distinct(tb_sig, .data$type.nm, .data$trend.nm, .data$force.nm,
+                  .data$spot.nm, .keep_all = TRUE)
 })
 
 test_that("QQ diagnostic on synthetic data is consistent", {

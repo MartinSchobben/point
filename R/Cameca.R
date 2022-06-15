@@ -76,13 +76,11 @@ Cameca <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .species = NULL
   fct_min <- qnorm((.alpha_level / 2))
   fct_max <- qnorm(1 - (.alpha_level / 2))
 
-  # Calculate weights for lm
-  .IC <- calc_lm_weight(.IC, X1, gr_by)
-
   dplyr::group_by(.IC, !!! gr_by) |>
     dplyr::mutate(
       !! args[["hat_s_R"]] := sd(!! args[["R"]]),
       !! args[["hat_X1"]] := !! args[["M_R"]] * !! args[["X2"]],
+      hat_E = !! args[["X1"]] - !! args[["hat_X1"]],
       flag = dplyr::if_else(
         dplyr::between(
           !! args[["R"]],
