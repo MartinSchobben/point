@@ -16,6 +16,7 @@ eval_diag(
   .t = NULL,
   .flag = NULL,
   .execution = NULL,
+  .hat_E = NULL,
   .output = "inference",
   .tf = "ppt",
   .label = "none",

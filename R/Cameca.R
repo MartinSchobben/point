@@ -49,6 +49,7 @@ Cameca <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .species = NULL
                    .hyp = "none", .mc_cores = 1) {
 
   # Grouping
+  ellipsis::check_dots_unnamed()
   gr_by <- enquos(...)
 
   # Quoting the call (user-supplied expressions)

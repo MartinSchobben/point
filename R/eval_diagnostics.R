@@ -90,9 +90,7 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
     # Model arguments
     !!! model_args,
     # Predicted rare isotope count rate
-    hat_X1 = quo_updt(args[["X1"]], pre = "hat"),
-    # Re-centred X
-    Xe = quo_updt(args[[".X"]], post = "e", update_post = TRUE)
+    hat_X1 = quo_updt(args[["X1"]], pre = "hat")
   )
 
   # Predicted rare isotope count rate
@@ -220,25 +218,61 @@ eval_diag <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .X = NULL,
 
 lm_fun <- function(.IC, args) {
 
-  # full R model
-  lm_1 <- formula_parser(.IC, args[["X1"]], args[["X2"]], flag = args[[".flag"]],
-                         type = "Rm")
   # zero R model
-  lm_0 <- formula_parser(.IC, args[["X1"]], args[["X2"]], type = "Rm")
+  lm_0 <- formula_parser(.IC, args[[".hat_E"]], args[[".t"]], type = "OLS")
 
-  # lm_1 <- formula_parser(.IC, args[[".hat_E"]], args[[".t"]],
-  #                        flag = args[[".flag"]], type = "OLS")
-  # # Join model hypothesis test
-  # IC_aov <- broom::glance(lm_1)
-  IC_aov <- broom::tidy(anova(lm_0 , lm_1))
+  # full residual model
+  lm_1 <- formula_parser(.IC, args[[".hat_E"]], args[[".t"]],
+                         flag = args[[".flag"]], type = "OLS")
+
+  # check hats
+  hats <- dplyr::filter(.IC, .data$flag == "divergent") |>
+    dplyr::summarise(ti = round(sum(hat_ti), 3), Xi = round(sum(hat_Xi),3))
+
+  if (hats$ti >= hats$Xi) {
+
+    # Joined model hypothesis test
+    # Joined model hypothesis test
+    IC_aov <- broom::tidy(anova(lm_0 , lm_1))
+    # IC_aov <- broom::glance(lm_1)
+
+    # return
+    # stats <- list(
+    #   Fstat = dplyr::pull(IC_aov, .data$statistic),
+    #   p = dplyr::pull(IC_aov, .data$p.value)
+    # )
+
+    stats <- list(
+      Fstat = dplyr::pull(IC_aov, .data$statistic)[2],
+      p = dplyr::pull(IC_aov, .data$p.value)[2]
+    )
+
+  } else {
+
+    # full R model
+    lm_1 <- formula_parser(.IC, args[["X1"]], args[["X2"]],
+                           flag = args[[".flag"]], type = "Rm")
+
+    # zero R model
+    lm_0 <- formula_parser(.IC, args[["X1"]], args[["X2"]], type = "Rm")
+
+    # Joined model hypothesis test
+    IC_aov <- broom::tidy(anova(lm_0 , lm_1))
+
+    # return
+    stats <- list(
+      Fstat = dplyr::pull(IC_aov, .data$statistic)[2],
+      p = dplyr::pull(IC_aov, .data$p.value)[2]
+    )
+  }
 
   tibble::lst(
     !! args[["ratio"]] := unique(dplyr::pull(.IC, !! args[["ratio"]])),
     !! args[["M_R"]] := unique(dplyr::pull(.IC, !! args[["M_R"]])),
-    # !! args[["F_R"]] := dplyr::pull(IC_aov, .data$statistic),
-    # !! args[["p_R"]] := dplyr::pull(IC_aov, .data$p.value),
-    !! args[["F_R"]] := dplyr::pull(IC_aov, .data$statistic)[2],
-    !! args[["p_R"]] := dplyr::pull(IC_aov, .data$p.value)[2]
+    !! args[["F_R"]] :=  stats$Fstat,
+    !! args[["p_R"]] :=  stats$p,
+    Xi = hats$Xi,
+    ti = hats$ti
   )
 }
 

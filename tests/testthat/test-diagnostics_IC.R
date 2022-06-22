@@ -33,6 +33,7 @@ test_that("diagnostics wrapper on synthetic data is consistent", {
            .label = "latex")
   )
   # Cameca style
+  suppressWarnings({
   tb_dia <- diag_R(simu_IC, "13C", "12C", type.nm, trend.nm, force.nm, spot.nm,
                    bl.nm, .method = "Cameca", .output = "diagnostic")
   # evaluation of performance (intra-analysis isotope test)
@@ -40,6 +41,7 @@ test_that("diagnostics wrapper on synthetic data is consistent", {
                       spot.nm, .X = Xt.pr, .N = N.pr, .species = species.nm,
                       .t = t.nm) |>
     tidyr::unnest(cols = M_R_Xt.pr)
+  })
   # extract distinct groups omitting block-wise means
   expect_snapshot(
     dplyr::distinct(tb_sig, type.nm, trend.nm, force.nm, spot.nm, .keep_all = TRUE)
@@ -127,5 +129,12 @@ test_that("errors in diag_R call", {
   expect_error(
     diag_R(dplyr::select(real_IC, -N.pr), "13C", "12C", file.nm),
     "Tibble does not contain the default variables!"
+  )
+  # bad arguments
+  expect_error(
+    plot_arg_check("CooksD", 0.05, list(typer = "static"))
+  )
+  expect_error(
+    diag_R(simu_IC, "13C", "12C", type.nm, spot.nm, method = "CooksD")
   )
 })

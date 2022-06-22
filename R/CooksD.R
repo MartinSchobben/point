@@ -6,6 +6,7 @@ CooksD <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .species = NULL
                    .alpha_level = 0.05, .mc_cores = 1){
 
   # Grouping
+  ellipsis::check_dots_unnamed()
   gr_by <- enquos(...)
 
   # function name
@@ -37,13 +38,13 @@ CooksD <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .species = NULL
   if(fun_nm != "CV" & .hyp == "bp") {
     stop("Wrong hypothesis test for this method.")
   }
-  if(fun_nm != "QQ" & (.hyp == "norm" | .hyp == "ttest")) {
+  if(fun_nm != "QQ" & (.hyp == "norm" || .hyp == "ttest")) {
     stop("Wrong hypothesis test for this method.")
   }
   if(fun_nm != "IR" & .hyp == "ljung") {
     stop("Wrong hypothesis test for this method.")
     }
-  if (!(fun_nm == "QQ" | fun_nm == "CV" | fun_nm == "IR") &  .hyp != "none") {
+  if (!(fun_nm == "QQ" || fun_nm == "CV" || fun_nm == "IR") &  .hyp != "none") {
     .hyp <- "none"
     warning("No hypothesis test avalaible for this method.")
   }
@@ -163,7 +164,7 @@ transmute_reg <- function(IC, X1, X2, type){
 
   if (type == "Rm"| type == "CV") args <- args[c(as_name(hat_X1), "studE")]
   if (type == "norm_E") args <- args[c("studE", "hat_Xi", "CooksD")]
-  if (type == "CooksD") args <- args[c(as_name(hat_X1), "CooksD", "hat_E")]
+  if (type == "CooksD") args <- args[c(as_name(hat_X1), "CooksD", "hat_E", "hat_Xi")]
   if (type == "QQ"| type == "IR") args <- args["studE"]
 
   # Execute

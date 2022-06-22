@@ -17,6 +17,7 @@ simu_R(
   .reps = 1,
   .baseR = 0,
   .devR = 0,
+  .offset = 1.5,
   ...
 )
 }
@@ -25,7 +26,7 @@ simu_R(
 relative standard deviation of the major ion in per mille}
 
 \item{.type}{Character string to select the type of simulation
-\code{"symmetric"}, \code{"asymmetric"} and \code{"ideal"}, where the former
+\code{"gradient"}, \code{"inclusion"} and \code{"ideal"}, where the former
 two types introduce an offset caused by a deviation in R.}
 
 \item{.ion1}{A character string constituting the heavy isotope ("13C").}
@@ -62,7 +63,7 @@ Simulate ion count data
 }
 \examples{
 
-# Gradient in 13C/12C over measurement transect
-simu_R(50, "symmetric", "13C", "12C", "VPDB", 1)
+# inclusion in 13C/12C over measurement transect
+simu_R(50, "gradient", "13C", "12C", "VPDB", 1)
 
 }

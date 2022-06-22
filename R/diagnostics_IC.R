@@ -26,7 +26,7 @@
 #' @param .ion2 A character string constituting the common isotope ("12C").
 #' @param ... Variables for grouping.
 #' @param .nest A variable hat identifies a series of analyses to calculate
-#'  the significance of inter-isotope variability.
+#'  the significance of inter-isotope variability (default = \code{NULL}).
 #' @param .method Character string for the method for diagnostics (default =
 #'  \code{"CooksD"}, see details).
 #' @param .reps Numeric setting the number of repeated iterations of outlier
@@ -43,29 +43,28 @@
 #'  and \code{stat_X()} statistics, diagnostics, and inference test results
 #'  following the selected method (see above argument \code{.method});
 #'  \code{"augmented"} for the augmented IC data after diagnostics;
-#'  \code{"diagnostic"} returns \code{stat_R()} and \code{stat_X()} statistics
-#'  and outlier detection; \code{"outlier"} for outlier detection;
-#'  \code{"inference"} for only inference test statistics results
-#'  (default = \code{"inference"}).
+#'  \code{"diagnostic"} returns \code{stat_R()} and \code{stat_X()} statistics;
+#'  \code{"outlier"} for outlier detection only; \code{"inference"} for only
+#'  inference test statistics results (default = \code{"inference"}).
 #' @param .label For printing nice latex labels use \code{"latex"} (default =
-#'  \code{NULL}).
+#'  \code{"none"}).
 #' @param .meta Logical whether to preserve the metadata as an attribute
 #'  (defaults to TRUE).
-#' @param .alpha_level Significance level of hypothesis test.
+#' @param .alpha_level Significance level of hypothesis test (default =
+#'  \code{0.05}).
 #' @param .hyp Hypothesis test appropriate for the selected method
 #'  (default = \code{"none"}).
-#' @param .plot Logical indicating whether plot is generated.
-#' @param .plot_type Character string determining whether the returned plot is
-#'  \code{"static"} \code{ggplot2::\link[ggplot2:ggplot2]{ggplot2}()}(currently
-#'  only supported option).
-#' @param .plot_stat Adds a statistic label to the plot (e.g. . \code{"M"}), see
-#'  \code{point::nm_stat_R} for the full selection of statistics available.
-#' @param .plot_iso A character string (e.g. \code{"VPDB"}) for the delta
-#'  conversion of R (see \code{?calib_R()} for options).
-#' @param .plot_outlier_labs A character vector of length two for the colourbar
-#'  text for outliers (default = c("divergent", "confluent")).
+#' @param .plot Logical indicating whether plot is generated (default =
+#'  \code{FALSE}).
+#' @param .plot_control List of controllers for plotting. Character string
+#'  determining whether the returned plot is \code{type = "static"} which
+#'  returns a \code{ggplot2::\link[ggplot2:ggplot2]{ggplot2}()} (currently only
+#'  supported option). Adding a statistic labels to the plot
+#'  (e.g. \code{stat = "M"}), see \code{point::nm_stat_R} for the full selection
+#'  of statistics available. A character vector of length two for the colourbar
+#'  text for outliers (\code{outlier_labs = c("divergent", "confluent")}).
 #' @param .mc_cores Number of workers for parallel execution (Does not work on
-#'   Windows).
+#'   Windows, default = 1).
 #'
 #' @return A \code{ggplot2::\link[ggplot2:ggplot]{ggplot}()} is returned
 #'  (if \code{.plot = TRUE}) along with a
@@ -84,13 +83,12 @@ diag_R <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .method = "CooksD",
                    .reps = 1, .X = NULL, .N = NULL, .species = NULL,
                    .t = NULL, .output = "inference", .label = "none",
                    .meta = FALSE, .alpha_level = 0.05, .hyp = "none",
-                   .plot = FALSE, .plot_type = "static", .plot_stat = NULL,
-                   .plot_iso = FALSE,
-                   .plot_outlier_labs = c("divergent", "confluent"),
+                   .plot = FALSE, .plot_control = list(),
                    .mc_cores = 1){
 
   # Quoting the call (user-supplied expressions)
   # Grouping
+  ellipsis::check_dots_unnamed()
   gr_by <- enquos(...)
 
   # stat_R variables
@@ -111,13 +109,7 @@ diag_R <- function(.IC, .ion1, .ion2, ..., .nest = NULL, .method = "CooksD",
   )
 
   # plot variables
-  plot_args <- rlang::list2(
-    .method = .method,
-    .plot_type = .plot_type,
-    .plot_stat = .plot_stat,
-    .alpha_level = .alpha_level,
-    .plot_outlier_labs = .plot_outlier_labs
-  )
+  plot_args <- plot_arg_check(.method, .alpha_level, .plot_control)
 
   # warnings
   if (.plot & .output == "augmented") {
@@ -372,4 +364,23 @@ all_args <- function(args, ion1, ion2, except = NULL, chr = TRUE) {
   } else {
     args
   }
+}
+
+# check plot arguments
+plot_arg_check <- function(method, alpha_level, args) {
+
+  # check plot args
+  if (any(!names(args) %in% c("type", "stat", "outlier_labs"))) {
+    rlang::abort("Unkown plot argument.")
+  }
+
+  # remove zero elements
+  args <- purrr::compact(args)
+  # default plot type
+  if (length(args) == 0) args$type <- "static"
+  # put dot in front of name
+  if (length(args) != 0) names(args) <- paste0(".", names(args))
+  # add method and alpha_level
+  args <- rlang::list2(!!!args, .alpha_level = alpha_level, .method = method)
+  args
 }

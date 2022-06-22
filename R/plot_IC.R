@@ -24,7 +24,7 @@ gg_IC <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .flag = NULL,
   hat_S_N1 <- quo_updt(args[[".N"]], pre = "hat_S", post = .ion1)
 
   # Filter execution
-  if (.plot_args[[".plot_type"]] == "static") {
+  if (.plot_args[[".type"]] == "static") {
     .IC <- dplyr::filter(.IC, .data$execution == .rep)
   }
 
@@ -71,12 +71,12 @@ gg_IC <- function(.IC, .ion1, .ion2, ..., .X = NULL, .N = NULL, .flag = NULL,
   if (isTRUE(.return_call)) p_call else  eval(p_call)
 }
 
+
 # base plot
-gg_base <- function(.IC, .x, .y, .flag, .method, .plot_type, ...,
-                    .plot_stat = NULL, .geom = "point", .hat = NULL,
-                    .sd = NULL, .se = NULL, .cv = NULL, .alpha_level,
-                    .rug = FALSE,
-                    .plot_outlier_labs =  c("divergent", "confluent")){
+gg_base <- function(.IC, .x, .y, .flag, .method, ..., .type = "static",
+                    .stat = NULL, .geom = "point", .hat = NULL,
+                    .sd = NULL, .se = NULL, .cv = NULL, .alpha_level = 0.05,
+                    .rug = FALSE, .outlier_labs =  c("divergent", "confluent")){
 
   # Grouping
   gr_by <- enquos(...)
@@ -92,10 +92,10 @@ gg_base <- function(.IC, .x, .y, .flag, .method, .plot_type, ...,
   ttl <- dplyr::filter(point::names_plot, .data$name == .method)
 
   # R statistics labels for geom_text
-  if (!is.null(.plot_stat)) tb_labs <- stat_labs(.IC, gr_by)
+  if (!is.null(.stat)) tb_labs <- stat_labs(.IC, gr_by)
 
   # Base plot
-  if (.plot_type == "static") {
+  if (.type == "static") {
     p <- ggplot2::ggplot(
       data = .IC,
       mapping = ggplot2::aes(x = !! .x, y = !! .y)
@@ -113,7 +113,7 @@ gg_base <- function(.IC, .x, .y, .flag, .method, .plot_type, ...,
   # Geom for "point" data
   if (.geom == "point") {
     if (requireNamespace("MASS", quietly = TRUE)) {
-      p <- dens_point(p, .flag, .IC, plot_width, .plot_outlier_labs)
+      p <- dens_point(p, .flag, .IC, plot_width, .outlier_labs)
     } else {
       message(paste0("Install package \"MASS\" for a better visualization of",
                      " potential outliers."))
@@ -124,10 +124,10 @@ gg_base <- function(.IC, .x, .y, .flag, .method, .plot_type, ...,
     p <- p + ggplot2::geom_hex()
   }
   if (.rug) p <- p + ggplot2::geom_rug(sides = "tr", alpha = 0.01)
-  if (!is.null(.plot_stat)) {
+  if (!is.null(.stat)) {
     p <- p +
       ggplot2::geom_text(
-        data = dplyr::filter(tb_labs, .data$stat %in% .plot_stat),
+        data = dplyr::filter(tb_labs, .data$stat %in% .stat),
         mapping = ggplot2::aes(
           x = -Inf,
           y = Inf,
@@ -177,8 +177,8 @@ gg_base <- function(.IC, .x, .y, .flag, .method, .plot_type, ...,
       labels = scales::label_scientific(2)
       ) +
     ggplot2::labs(
-      x = axis_labs(ttl$xaxis, ion2, .plot_type),
-      y = axis_labs(ttl$yaxis, ion1, .plot_type),
+      x = axis_labs(ttl$xaxis, ion2, .type),
+      y = axis_labs(ttl$yaxis, ion1, .type),
       title = ttl$label
       ) +
     ggplot2::theme_classic()+
@@ -208,11 +208,11 @@ gg_IR <- function(.IC, .lag, .acf, .flag, ..., .sd = NULL){
 }
 
 # axis labels
-axis_labs <- function(type, ion, plot_type){
-  if (!(type == "ionct" | type ==  "hat_Y")) ion <- NULL
-  if (plot_type == "static") {
+axis_labs <- function(axis, ion, type){
+  if (!(axis == "ionct" | axis ==  "hat_Y")) ion <- NULL
+  if (type == "static") {
     switch(
-      type,
+      axis,
       ionct = substitute(
         a ~ "(count sec" ^ "-" * ")", list(a = ion_labeller(ion, "expr"))
         ),
@@ -228,7 +228,7 @@ axis_labs <- function(type, ion, plot_type){
     )
   } else {
     switch(
-      type,
+      axis,
       ionct = stringr::str_replace("ion (ct/sec)", "ion", ion),
       studE = "studentized residuals",
       TQ = "Theoretical quantiles",
@@ -292,7 +292,7 @@ ribbon_stat <- function(IC, hat, bound, alpha_level) {
 }
 
 # calculate 2D density
-dens_point <- function (p, flag, IC, width, plot_outlier_labs) {
+dens_point <- function (p, flag, IC, width, outlier_labs) {
 
   # colors
   div_col <- c("#8E063B", "#BB7784", "#D6BCC0", "#E2E2E2", "#BEC1D4", "#7D87B9",
@@ -308,7 +308,7 @@ dens_point <- function (p, flag, IC, width, plot_outlier_labs) {
       ggplot2::scale_color_gradientn(
         "",
         breaks = range(IC$dens),
-        labels =  plot_outlier_labs,
+        labels =  outlier_labs,
         colors = div_col,
         na.value = "transparent",
         guide = ggplot2::guide_colourbar(ticks = FALSE, barwidth = width)
